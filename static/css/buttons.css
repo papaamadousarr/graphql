@@ -1,0 +1,125 @@
+.topnav__button{
+    background-color:white;
+    border-radius: 3%;
+    height: 70px;
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+    font-size:25px;
+    font-weight: bold;
+    color: var(--color-primary);
+    border: none;
+    cursor: pointer;
+    margin: 0 6px 0 6px;
+}
+
+#loginBtn, #registerBtn, #logout-btn{
+    height: 70px;
+    width: auto;
+    margin-top: 5px;
+    font-size: 25px;
+    font-weight: bold;
+    color: var(--color-primary);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+}
+
+.topnav__right--registerBtn{
+    margin-left:14px;
+    cursor: pointer;
+}
+
+.form__button, #logout-btn{
+    width:100%;
+    padding: 0.5rem 2rem;
+    font-weight:bold;
+    font-size: 1.1rem;
+    color: #ffffff;
+    background-color: var(--color-primary);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    outline: none;
+}
+
+.form__button:hover, #logout-btn:hover{
+    background: var(--color-primary-light);
+    cursor: pointer;
+}
+
+.form__button:active{
+    transform: scale(0.98);
+    cursor: pointer;
+}
+
+#submitPostBtn, #cancelEditGenderBtn, #editGenderBtn, #cancelEditGenderBtn, #saveGenderBtn, #editPasswordBtn, #editFNameBtn, #editPasswordBtn, #saveLNameBtn, #cancelEditPasswordBtn, #savePasswordBtn, #editLNameBtn, #cancelEditLNameBtn, #saveFNameBtn, #cancelEditFNameBtn{
+    background-color: var(--color-primary);
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    border: none;
+    border-radius: 10%;
+    cursor: pointer;
+}
+
+#submitPostBtn {
+    height: 50px;
+    width: 90px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#editPasswordBtn, #saveGenderBtn,#editGenderBtn, #cancelEditGenderBtn, #editFNameBtn, #editLNameBtn, #saveFNameBtn, #savePasswordBtn, #saveLNameBtn, #cancelEditFNameBtn, #cancelEditPasswordBtn, #cancelEditLNameBtn {
+    border-radius: 0px;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+}
+
+
+#saveFNameBtn, #savePasswordBtn, #saveLNameBtn, #saveGenderBtn {
+    height: 35px;
+    background-color: var(--color-primary);
+    color:white
+
+}
+#cancelEditFNameBtn, #cancelEditPasswordBtn, #cancelEditLNameBtn, #cancelEditGenderBtn  {
+    height: 35px;
+    background-color: #dcdfe3;
+    color:black
+}
+
+#editPasswordBtn, #editFNameBtn, #editLNameBtn, #editGenderBtn {
+    height: 35px;
+    width: 65px;
+    background-color: #dcdfe3;
+    color:black
+}
+
+#chatBtn{
+    cursor: pointer;
+}
+
+/* screen media for 1280 */
+@media screen and (max-width: 1280px){
+    .topnav__button {
+        height: 40px;
+        font-size: 18px;
+        cursor: pointer;
+    }
+    .form__button {
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+    #loginBtn, #registerBtn {
+        height: 50px;
+        margin-top: 0px; 
+        cursor: pointer;
+    }
+}
+
