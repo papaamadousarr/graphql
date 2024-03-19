@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
+  <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+  <meta charset="UTF-8">
+  <title>Home Profil</title>
+  <link rel="stylesheet" href="home.css">
+</head>
+<body>
+  <header>
+    <div class="banner">
+      <h1 class="logo">Home Profil</h1>
+      <div class="user-info">
+        <p>Connecté en tant que <span id="username"></span></p>
+        <button id="logout-btn" class="logout-btn">Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section-border">
+      <div class="chart-container">
+        <canvas id="myChart1"></canvas>
+      </div>
+    </section>
+
+    <section class="section-border">
+      <div class="chart-container">
+        <canvas id="myChart"></canvas>
+      </div>
+    </section>
+
+    <button id="btn-graph" class="btn-graph">Reset</button>
+    
+  </main>
+
+  <script src="graph.js"></script>
+</body>
+</html>

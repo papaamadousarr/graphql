@@ -1,4 +1,4 @@
-### There are 2 ways to run this application
-1. Run on liveserver from index.html
+# GraphQL
 
-
+A re create intra of the Zone01 school.
+With all mainly features like the xp, programming skills ...
