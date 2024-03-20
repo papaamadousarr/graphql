@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  
+  <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+  <meta charset="UTF-8">
+  <title>Graph Profil</title>
+  <link rel="stylesheet" href="home.css">
+</head>
+<body>
+  <style>
+  #totalUp{
+    position: relative;
+  top: -190px;
+  left: 230px;
+  }
+#totalDown{
+    position: relative;
+  top: -177px;
+  left: 230px;
+
+
+}
+#auditsRatio{
+  position: relative;
+  top: -160px;
+  left: 100px;
+
+}
+  </style>
+  <header>
+    <div class="banner">
+      <h1 class="logo">Home Profil</h1>
+      <div class="user-info">
+        <p>Connected <span id="username"></span></p>
+        <button id="logout-btn" class="logout-btn">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section-border">
+      <div class="chart-container">
+        <canvas id="myChart1"></canvas>
+      </div>
+    </section>
+
+    <section class="section-border">
+      <div class="chart-container">
+        <canvas id="myChart"></canvas>
+      </div>
+     
+
+    </section>
+    <section class="section-border-svg" >
+      <div class="svg-container">
+        <div class="fs4-01 textNeutral-01">Audits ratio</div>
+        <div class="svg-conyainer">
+          <svg width="200" height="200">
+            <!-- Barre 1 -->
+            
+            <rect  id ="bar1" x="50" y="20" width="80" height="10" fill="#801877" />
+            <!-- Barre 2 -->
+            <rect id="bar2" x="50" y="50" width="70" height="10" fill="#BD83B8" />
+        </svg>
+        <div class="dat-audits">
+          <div id="totalUp">Up: <span id ="up"></span></div>
+          <div id="totalDown">Down: <span id="down" ></span></div>
+        </div>
+        <h2 id="auditsRatio">F</h2>
+        </div>
+      </div>
+    </section>
+
+    <button id="btn-graph" class="btn-graph">Reset</button>
+    
+  </main>
+
+  <script src="graph.js"></script>
+</body>
+</html>
