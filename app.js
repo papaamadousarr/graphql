@@ -117,8 +117,8 @@ export function getUserData(URL) {
     })
         .then(response => response.json())
         .then(response => {
-            ID = response["data"]["user"][0]["id"]
-            Username = response["data"]["user"][0]["login"].charAt(0).toUpperCase() + response["data"]["user"][0]["login"].slice(1)
+            ID = response["user"][0]["id"]
+            Username = response["user"][0]["login"].charAt(0).toUpperCase() + response["user"][0]["login"].slice(1)
             return ID, Username
         })
 }
