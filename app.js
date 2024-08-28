@@ -1,7 +1,7 @@
 // Vérifier si l'utilisateur est déjà connecté
 const jwt = localStorage.getItem('jwt');
 if (jwt) {
-    createHomepage(totalLevel, totalSkill, totalGrade);
+    createHomepage(totalLevel, totalSkill, totalXp, totalGrade);
 }
 
 // Gérer le formulaire de connexion
@@ -28,7 +28,7 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
             console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
             if (data.token) {
                 localStorage.setItem('jwt', data.token);
-                createHomepage(totalLevel, totalSkill, totalGrade);
+                createHomepage(totalLevel, totalSkill, totalXp, totalGrade);
             } else {
                 throw new Error('No token received');
             }
