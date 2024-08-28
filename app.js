@@ -103,7 +103,7 @@ export function getUserData(URL) {
     return fetch(URL, {
         method: "POST",
         headers: {
-            "Authorization": 'Bearer ' + token,
+            "Authorization": 'Bearer ',
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
