@@ -86,8 +86,8 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
         })
         .then(data => {
             console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
-            if (data.token) {
-                localStorage.setItem('jwt', data.token);
+            if (data) {
+                localStorage.setItem('jwt', data);
                 createHomepage(totalLevel, totalSkill, totalXp, totalGrade)
             } else {
                 throw new Error('No token received');
