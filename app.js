@@ -396,13 +396,13 @@ function otherUsersGQL(encodedCredentials) {
                 const errorMessage = document.createElement("p")
                 errorMessage.classList.add("error-message")
                 errorMessage.innerHTML = "Failed To Find Account. Please Try Again"
-                if (document.querySelector(".error-message") == undefined) {
-                    document.querySelector("#SignInFormData").insertBefore(errorMessage, document.querySelector(".submit-sign-in"))
-                }
+                // if (document.querySelector(".error-message") == undefined) {
+                //     document.querySelector("#SignInFormData").insertBefore(errorMessage, document.querySelector(".submit-sign-in"))
+                // }
                 setTimeout(() => createLoader(false), 2000)
 
             } else {
-                document.querySelector(".sign-in-container").remove()
+                // document.querySelector(".sign-in-container").remove()
                 console.log(response)
                 token = response
             }
