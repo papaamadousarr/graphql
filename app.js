@@ -80,6 +80,7 @@ document.getElementById('logoutButton').addEventListener('click', function () {
     location.reload();
 });
 
+
 function renderXpGraph() {
     const svg = document.getElementById('xpGraph');
     const tooltip = document.getElementById('tooltip');
