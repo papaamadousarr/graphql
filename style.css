@@ -9,6 +9,7 @@
   #profileSection,
   #graphSection {
       display: none;
+      border: 1px solid #000; 
   }
 
   /* From Uiverse.io by AnthonyPreite */ 
