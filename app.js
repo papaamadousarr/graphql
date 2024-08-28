@@ -8,37 +8,55 @@ if (jwt) {
 document.getElementById('loginForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const credentials = btoa(`${username}:${password}`);
+    // const username = document.getElementById('username').value;
+    // const password = document.getElementById('password').value;
+    // const credentials = btoa(`${username}:${password}`);
 
-    fetch('https://learn.zone01dakar.sn/api/auth/signin', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Basic ${credentials}`
-        }
-    })
+    function loginUser(credentials) {
+        fetch('https://learn.zone01dakar.sn/api/auth/signin', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${credentials}`,
+                'Content-Type': 'application/json'
+            }
+        })
         .then(response => {
+            // Log the status and headers for debugging
+            console.log('Response Status:', response.status);
+            console.log('Response Headers:', [...response.headers.entries()]);
+    
             if (!response.ok) {
-                throw new Error('Invalid credentials');
+                // Handle HTTP errors
+                return response.json().then(errorData => {
+                    throw new Error(`HTTP Error ${response.status}: ${errorData.message || 'Unknown error'}`);
+                });
             }
             return response.json();
         })
         .then(data => {
-            console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
+            console.log('Authentication Response:', data); // Log the full response
+    
+            // Check for token in the response
             if (data.token) {
                 localStorage.setItem('jwt', data.token);
-                showProfile();
+                showProfile(); // Function to display user profile
             } else {
                 throw new Error('No token received');
             }
         })
         .catch(error => {
             console.error('Login error:', error);
-            document.getElementById('errorMessage').style.display = 'block';
+            const errorMessageElement = document.getElementById('errorMessage');
+            if (errorMessageElement) {
+                errorMessageElement.style.display = 'block';
+                errorMessageElement.textContent = error.message; // Display the error message
+            }
         });
-
-});
+    }
+    
+    // Example usage
+    const credentials = btoa('username:password'); // Replace with actual Base64 encoded credentials
+    loginUser(credentials);
 
 // Afficher le profil utilisateur
 function showProfile() {
