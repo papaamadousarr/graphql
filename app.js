@@ -118,23 +118,22 @@ function renderXpGraph() {
     .then(data => {
         if (data.data && data.data.transaction) {
             const transactions = data.data.transaction;
-            const monthlyTotals = transactions.reduce((acc, t) => {
-                const date = new Date(t.createdAt);
-                const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
-                acc[monthYear] = (acc[monthYear] || 0) + t.amount;
+            
+            // Compter le nombre de étudiants pour chaque montant XP
+            const xpCounts = transactions.reduce((acc, t) => {
+                acc[t.amount] = (acc[t.amount] || 0) + 1;
                 return acc;
             }, {});
 
-            const dataArray = Object.entries(monthlyTotals).map(([label, value]) => ({ label, value }));
+            const dataArray = Object.entries(xpCounts).map(([xp, count]) => ({ xp: +xp, count }));
 
             // Définir les échelles
-            const xScale = d3.scaleBand()
-                .domain(dataArray.map(d => d.label))
-                .range([0, graphWidth])
-                .padding(0.1);
+            const xScale = d3.scaleLinear()
+                .domain([0, d3.max(dataArray, d => d.xp)])
+                .range([0, graphWidth]);
 
             const yScale = d3.scaleLinear()
-                .domain([0, d3.max(dataArray, d => d.value)])
+                .domain([0, d3.max(dataArray, d => d.count)])
                 .nice()
                 .range([graphHeight, 0]);
 
@@ -143,10 +142,10 @@ function renderXpGraph() {
                 .data(dataArray)
                 .enter().append('rect')
                 .attr('class', 'bar')
-                .attr('x', d => xScale(d.label))
-                .attr('y', d => yScale(d.value))
-                .attr('width', xScale.bandwidth())
-                .attr('height', d => graphHeight - yScale(d.value))
+                .attr('x', d => xScale(d.xp))
+                .attr('y', d => yScale(d.count))
+                .attr('width', d => xScale(d.xp + 1) - xScale(d.xp))
+                .attr('height', d => graphHeight - yScale(d.count))
                 .attr('fill', '#69b3a2');
 
             // Créer et ajouter les axes X et Y
@@ -164,7 +163,7 @@ function renderXpGraph() {
 
             // Créer la légende
             const legendData = [
-                { color: '#69b3a2', label: 'XP Amount' }
+                { color: '#69b3a2', label: 'Number of Students' }
             ];
 
             const legend = svg.append('g')
@@ -197,7 +196,6 @@ function renderXpGraph() {
         console.error('XP Graph fetch error:', error);
     });
 }
-
 
 // Fonction pour dessiner le graphique des résultats des projets
 function renderProjectResultsGraph() {
