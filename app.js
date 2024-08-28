@@ -58,6 +58,8 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
     const credentials = btoa('username:password'); // Replace with actual Base64 encoded credentials
     loginUser(credentials);
 
+});
+
 // Afficher le profil utilisateur
 function showProfile() {
     document.getElementById('loginSection').style.display = 'none';
