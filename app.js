@@ -1,41 +1,6 @@
 import { createHomepage } from "./ui/homepage-layout.js"
 import { createLoader } from "./ui/loader.js"
 
-// Gérer le formulaire de connexion
-document.getElementById('loginForm').addEventListener('submit', function (event) {
-    event.preventDefault();
-
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const credentials = btoa(`${username}:${password}`);
-
-    fetch('https://learn.zone01dakar.sn/api/auth/signin', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Basic ${credentials}`
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Invalid credentials');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
-            if (data.token) {
-                localStorage.setItem('jwt', data.token);
-                showProfile();
-            } else {
-                throw new Error('No token received');
-            }
-        })
-        .catch(error => {
-            console.error('Login error:', error);
-            document.getElementById('errorMessage').style.display = 'block';
-        });
-
-});
 
 
 const Url = "https://learn.01founders.co/api/graphql-engine/v1/graphql"
@@ -96,9 +61,44 @@ let totalLevel = {}
 // Vérifier si l'utilisateur est déjà connecté
 const jwt = localStorage.getItem('jwt');
 if (jwt) {
-    showProfile();
+    createHomepage(totalLevel, totalSkill, totalXp, totalGrade)
 }
 
+// Gérer le formulaire de connexion
+document.getElementById('loginForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const credentials = btoa(`${username}:${password}`);
+
+    fetch('https://learn.zone01dakar.sn/api/auth/signin', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${credentials}`
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Invalid credentials');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
+            if (data.token) {
+                localStorage.setItem('jwt', data.token);
+                createHomepage(totalLevel, totalSkill, totalXp, totalGrade)
+            } else {
+                throw new Error('No token received');
+            }
+        })
+        .catch(error => {
+            console.error('Login error:', error);
+            document.getElementById('errorMessage').style.display = 'block';
+        });
+
+});
 export function getUserData(URL) {
     return fetch(URL, {
         method: "POST",
