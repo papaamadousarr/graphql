@@ -9,9 +9,10 @@
   #profileSection,
   #graphSection {
       display: none;
-      border: 1px solid #000; 
   }
-
+  #xpGraph, #projectResultsGraph {
+    border: 1px solid #000; /* Add a border to check visibility */
+}
   /* From Uiverse.io by AnthonyPreite */ 
 #loginForm {
   display: grid;
