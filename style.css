@@ -11,7 +11,7 @@
       display: none;
   }
   #xpGraph, #projectResultsGraph {
-    border: 1px solid #000; /* Add a border to check visibility */
+    border: 2px solid #ec0808; /* Add a border to check visibility */
 }
   /* From Uiverse.io by AnthonyPreite */ 
 #loginForm {
