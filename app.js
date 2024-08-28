@@ -82,7 +82,7 @@ document.getElementById('logoutButton').addEventListener('click', function () {
 
 // Fonction pour dessiner le graphique XP
 function renderXpGraph() {
-    const svg = document.getElementById('xpGraph');
+    const svg = document.getElementById('xpPieChart');
     const jwt = localStorage.getItem('jwt');
 
     if (!jwt) {
@@ -109,71 +109,79 @@ function renderXpGraph() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('XP Graph Data:', data); // For debugging the data format
-
         if (data.data && data.data.transaction) {
             const transactions = data.data.transaction;
 
-            // Check if transactions have data
+            // Vérifiez s'il y a des transactions
             if (transactions.length === 0) {
                 console.log('No transactions data available.');
-                svg.innerHTML = '<text x="10" y="20">No data available</text>'; // Optional: display a message
+                svg.innerHTML = '<text x="10" y="20">No data available</text>'; // Affiche un message
                 return;
             }
 
-            // Determine the SVG dimensions
-            const width = svg.clientWidth;
-            const height = svg.clientHeight;
+            // Calculer la somme totale des montants pour le graphique
+            const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
 
-            // Get min and max values for scaling
-            const minAmount = Math.min(...transactions.map(t => t.amount));
-            const maxAmount = Math.max(...transactions.map(t => t.amount));
-            const minDate = Math.min(...transactions.map(t => new Date(t.createdAt).getTime()));
-            const maxDate = Math.max(...transactions.map(t => new Date(t.createdAt).getTime()));
+            // Préparer les données pour le graphique
+            let startAngle = 0;
+            const radius = Math.min(svg.clientWidth, svg.clientHeight) / 2;
+            const centerX = svg.clientWidth / 2;
+            const centerY = svg.clientHeight / 2;
+            const pieSlices = transactions.map(t => {
+                const sliceAngle = (t.amount / totalAmount) * 2 * Math.PI;
+                const endAngle = startAngle + sliceAngle;
+                const path = describeArc(centerX, centerY, radius, startAngle * 180 / Math.PI, endAngle * 180 / Math.PI);
+                startAngle = endAngle;
+                return { path, color: getRandomColor() };
+            });
 
-            // Prepare points for polyline
-            const points = transactions.map(t => {
-                const date = new Date(t.createdAt).getTime();
-                const scaledX = ((date - minDate) / (maxDate - minDate)) * width;
-                const scaledY = height - ((t.amount - minAmount) / (maxAmount - minAmount)) * height;
-                return `${scaledX},${scaledY}`;
-            }).join(' ');
-
-            // Clear previous content
+            // Effacer le contenu précédent
             svg.innerHTML = '';
 
-            // Create and append polyline
-            const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-            polyline.setAttribute('fill', 'none');
-            polyline.setAttribute('stroke', 'blue');
-            polyline.setAttribute('stroke-width', '2');
-            polyline.setAttribute('points', points);
+            // Ajouter chaque secteur de tarte au graphique
+            pieSlices.forEach(slice => {
+                const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                pathElement.setAttribute('d', slice.path);
+                pathElement.setAttribute('fill', slice.color);
+                svg.appendChild(pathElement);
+            });
 
-            svg.appendChild(polyline);
+            // Fonction pour créer un arc (secteur de tarte) en SVG
+            function describeArc(x, y, radius, startAngle, endAngle) {
+                const start = polarToCartesian(x, y, radius, endAngle);
+                const end = polarToCartesian(x, y, radius, startAngle);
+                const arcSweep = endAngle - startAngle <= 180 ? '0' : '1';
 
-            // Optional: Add axes, labels, or grid for better visualization
-            // Example: Add X and Y axes (you might need to adjust according to your needs)
-            const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            xAxis.setAttribute('x1', '0');
-            xAxis.setAttribute('y1', height);
-            xAxis.setAttribute('x2', width);
-            xAxis.setAttribute('y2', height);
-            xAxis.setAttribute('stroke', 'black');
-            svg.appendChild(xAxis);
+                return [
+                    'M', start.x, start.y,
+                    'A', radius, radius, 0, arcSweep, 0, end.x, end.y,
+                    'L', x, y,
+                    'Z'
+                ].join(' ');
+            }
 
-            const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            yAxis.setAttribute('x1', '0');
-            yAxis.setAttribute('y1', '0');
-            yAxis.setAttribute('x2', '0');
-            yAxis.setAttribute('y2', height);
-            yAxis.setAttribute('stroke', 'black');
-            svg.appendChild(yAxis);
+            function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+                const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+                return {
+                    x: centerX + radius * Math.cos(angleInRadians),
+                    y: centerY + radius * Math.sin(angleInRadians)
+                };
+            }
+
+            function getRandomColor() {
+                const letters = '0123456789ABCDEF';
+                let color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
         } else {
             throw new Error('Transaction data not found');
         }
     })
     .catch(error => {
-        console.error('XP Graph fetch error:', error);
+        console.error('XP Pie Chart fetch error:', error);
     });
 }
 
