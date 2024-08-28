@@ -86,13 +86,19 @@ function renderXpGraph() {
     const jwt = localStorage.getItem('jwt');
     const width = svg.clientWidth;
     const height = svg.clientHeight;
-    const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+    const margin = { top: 20, right: 20, bottom: 50, left: 60 };
     const graphWidth = width - margin.left - margin.right;
     const graphHeight = height - margin.top - margin.bottom;
 
-    // Fonction pour convertir les données en format pour les barres
-    const xScale = d3.scaleBand().range([0, graphWidth]).padding(0.1);
-    const yScale = d3.scaleLinear().range([graphHeight, 0]);
+    // Nettoyer le SVG avant de dessiner le nouveau graphique
+    while (svg.firstChild) {
+        svg.removeChild(svg.firstChild);
+    }
+
+    // Créer un groupe pour le graphique
+    const plot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    plot.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+    svg.appendChild(plot);
 
     fetch('https://learn.zone01dakar.sn/api/graphql-engine/v1/graphql', {
         method: 'POST',
@@ -116,6 +122,7 @@ function renderXpGraph() {
         console.log('XP Graph Data:', data);
 
         if (data.data && data.data.transaction) {
+            // Transform the data to monthly totals
             const transactions = data.data.transaction;
             const monthlyTotals = transactions.reduce((acc, t) => {
                 const date = new Date(t.createdAt);
@@ -126,21 +133,18 @@ function renderXpGraph() {
 
             const dataArray = Object.entries(monthlyTotals).map(([label, value]) => ({ label, value }));
 
-            // Définir les échelles
-            xScale.domain(dataArray.map(d => d.label));
-            yScale.domain([0, d3.max(dataArray, d => d.value)]);
+            // Define scales
+            const xScale = d3.scaleBand()
+                .domain(dataArray.map(d => d.label))
+                .range([0, graphWidth])
+                .padding(0.1);
 
-            // Nettoyer l'ancien graphique
-            while (svg.firstChild) {
-                svg.removeChild(svg.firstChild);
-            }
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(dataArray, d => d.value)])
+                .nice()
+                .range([graphHeight, 0]);
 
-            // Créer le groupe pour les barres
-            const plot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            plot.setAttribute('transform', `translate(${margin.left},${margin.top})`);
-            svg.appendChild(plot);
-
-            // Dessiner les barres
+            // Create bars
             dataArray.forEach(d => {
                 const x = xScale(d.label);
                 const barWidth = xScale.bandwidth();
@@ -154,24 +158,45 @@ function renderXpGraph() {
                 plot.appendChild(rect);
             });
 
-            // Ajouter les labels des axes
-            const xAxisGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            xAxisGroup.setAttribute('class', 'axis');
-            xAxisGroup.setAttribute('transform', `translate(${margin.left},${height - margin.bottom})`);
-            svg.appendChild(xAxisGroup);
+            // Create X Axis
+            const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            xAxis.setAttribute('class', 'axis');
+            xAxis.setAttribute('transform', `translate(0,${graphHeight})`);
+            svg.appendChild(xAxis);
 
-            const yAxisGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            yAxisGroup.setAttribute('class', 'axis');
-            yAxisGroup.setAttribute('transform', `translate(${margin.left},${margin.top})`);
-            svg.appendChild(yAxisGroup);
+            // Create Y Axis
+            const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            yAxis.setAttribute('class', 'axis');
+            svg.appendChild(yAxis);
 
-            // Dessiner les axes avec D3.js (ou ajuster selon votre méthode)
-            d3.select(xAxisGroup)
+            // Adding X axis labels
+            dataArray.forEach(d => {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', xScale(d.label) + xScale.bandwidth() / 2);
+                text.setAttribute('y', graphHeight + margin.bottom / 2);
+                text.setAttribute('text-anchor', 'middle');
+                text.textContent = d.label;
+                svg.appendChild(text);
+            });
+
+            // Adding Y axis labels
+            const yAxisLabels = [0, d3.max(dataArray, d => d.value)];
+            yAxisLabels.forEach(label => {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', -margin.left / 2);
+                text.setAttribute('y', yScale(label) + margin.top);
+                text.setAttribute('text-anchor', 'middle');
+                text.textContent = label;
+                text.setAttribute('class', 'axis');
+                svg.appendChild(text);
+            });
+
+            // Draw X and Y axis using D3.js scales (or you can manually implement them)
+            d3.select(xAxis)
                 .call(d3.axisBottom(xScale));
 
-            d3.select(yAxisGroup)
+            d3.select(yAxis)
                 .call(d3.axisLeft(yScale));
-
         } else {
             throw new Error('Transaction data not found');
         }
@@ -180,9 +205,6 @@ function renderXpGraph() {
         console.error('XP Graph fetch error:', error);
     });
 }
-
-// Charge le graphique après le chargement du document
-document.addEventListener('DOMContentLoaded', renderXpGraph);
 
 
 // Fonction pour dessiner le graphique des résultats des projets
