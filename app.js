@@ -118,18 +118,24 @@ function renderXpGraph() {
     .then(data => {
         if (data.data && data.data.transaction) {
             const transactions = data.data.transaction;
-            
-            // Compter le nombre de étudiants pour chaque montant XP
-            const xpCounts = transactions.reduce((acc, t) => {
-                acc[t.amount] = (acc[t.amount] || 0) + 1;
-                return acc;
-            }, {});
 
-            const dataArray = Object.entries(xpCounts).map(([xp, count]) => ({ xp: +xp, count }));
+            // Define XP ranges (bins)
+            const binSize = 1000; // Define the bin size for XP ranges
+            const xpRange = d3.bin().thresholds(d3.range(0, d3.max(transactions, d => d.amount) + binSize, binSize));
 
-            // Définir les échelles
+            // Process data into bins
+            const binnedData = xpRange(transactions.map(d => d.amount));
+
+            // Calculate counts for each bin
+            const dataArray = binnedData.map(bin => ({
+                x0: bin.x0,
+                x1: bin.x1,
+                count: bin.length
+            }));
+
+            // Define the scales
             const xScale = d3.scaleLinear()
-                .domain([0, d3.max(dataArray, d => d.xp)])
+                .domain([0, d3.max(dataArray, d => d.x1)])
                 .range([0, graphWidth]);
 
             const yScale = d3.scaleLinear()
@@ -137,20 +143,20 @@ function renderXpGraph() {
                 .nice()
                 .range([graphHeight, 0]);
 
-            // Créer les barres
+            // Create bars
             plot.selectAll('.bar')
                 .data(dataArray)
                 .enter().append('rect')
                 .attr('class', 'bar')
-                .attr('x', d => xScale(d.xp))
+                .attr('x', d => xScale(d.x0))
                 .attr('y', d => yScale(d.count))
-                .attr('width', d => xScale(d.xp + 1) - xScale(d.xp))
+                .attr('width', d => xScale(d.x1) - xScale(d.x0))
                 .attr('height', d => graphHeight - yScale(d.count))
                 .attr('fill', '#69b3a2');
 
-            // Créer et ajouter les axes X et Y
-            const xAxis = d3.axisBottom(xScale);
-            const yAxis = d3.axisLeft(yScale);
+            // Create and add the X and Y axes
+            const xAxis = d3.axisBottom(xScale).tickSize(-graphHeight).ticks(10);
+            const yAxis = d3.axisLeft(yScale).ticks(10);
 
             plot.append('g')
                 .attr('class', 'x axis')
@@ -161,7 +167,22 @@ function renderXpGraph() {
                 .attr('class', 'y axis')
                 .call(yAxis);
 
-            // Créer la légende
+            // Add labels for X axis
+            plot.append('text')
+                .attr('x', graphWidth / 2)
+                .attr('y', graphHeight + margin.bottom - 10)
+                .attr('text-anchor', 'middle')
+                .text('XP Range');
+
+            // Add labels for Y axis
+            plot.append('text')
+                .attr('x', -margin.left / 2)
+                .attr('y', -margin.top / 2)
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'rotate(-90)')
+                .text('Number of Students');
+
+            // Create the legend if needed
             const legendData = [
                 { color: '#69b3a2', label: 'Number of Students' }
             ];
