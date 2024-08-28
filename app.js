@@ -87,21 +87,21 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
         .then(data => {
             console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
             if (data) {
-                localStorage.setItem('jwt', data);
-                // getUserData(Url).then(
-                //     () => {
-                //         getTransactionData(Url)
-                //             .then(response => {
-                //                 getTotalSkills()
-                //                 getLevels()
-                //                 return getProgressData(Url).then(() => {
-                //                     getTotalXpAndGrades(projectTransactions(response, progressArr))
-                //                 })
-                //             }).then(() => {
-                //                 createHomepage(totalLevel, totalSkill, totalXp, totalGrade)
-                //                 setTimeout(() => createLoader(false), 5000)
-                //             })
-                //     })
+                // localStorage.setItem('jwt', data);
+                getUserData(Url).then(
+                    () => {
+                        getTransactionData(Url)
+                            .then(response => {
+                                getTotalSkills()
+                                getLevels()
+                                return getProgressData(Url).then(() => {
+                                    getTotalXpAndGrades(projectTransactions(response, progressArr))
+                                })
+                            }).then(() => {
+                                createHomepage(totalLevel, totalSkill, totalXp, totalGrade)
+                                setTimeout(() => createLoader(false), 5000)
+                            })
+                    })
             } else {
                 throw new Error('No token received');
             }
