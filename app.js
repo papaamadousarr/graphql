@@ -54,7 +54,7 @@ let resultArr = []
 let totalSkillArr = []
 
 let totalSkill = {}
-var totalXp = {}
+let totalXp = {}
 let totalGrade = {}
 let totalLevel = {}
 
@@ -88,7 +88,7 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
             console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
             if (data) {
                 localStorage.setItem('jwt', data);
-                createHomepage(totalLevel, totalSkill, totalXp, totalGrade)
+                otherUsersGQL(credentials);
             } else {
                 throw new Error('No token received');
             }
