@@ -88,7 +88,7 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
             console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
             if (data) {
                 localStorage.setItem('jwt', data);
-                otherUsersGQL(credentials);
+                otherUsersGQL(credentials)
             } else {
                 throw new Error('No token received');
             }
@@ -103,7 +103,7 @@ export function getUserData(URL) {
     return fetch(URL, {
         method: "POST",
         headers: {
-            "Authorization": 'Bearer ',
+            "Authorization": 'Bearer ' + token,
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -117,7 +117,6 @@ export function getUserData(URL) {
     })
         .then(response => response.json())
         .then(response => {
-            console.log(response);
             ID = response["data"]["user"][0]["id"]
             Username = response["data"]["user"][0]["login"].charAt(0).toUpperCase() + response["data"]["user"][0]["login"].slice(1)
             return ID, Username
@@ -397,13 +396,13 @@ function otherUsersGQL(encodedCredentials) {
                 const errorMessage = document.createElement("p")
                 errorMessage.classList.add("error-message")
                 errorMessage.innerHTML = "Failed To Find Account. Please Try Again"
-                // if (document.querySelector(".error-message") == undefined) {
-                //     document.querySelector("#SignInFormData").insertBefore(errorMessage, document.querySelector(".submit-sign-in"))
-                // }
+                if (document.querySelector(".error-message") == undefined) {
+                    document.querySelector("#SignInFormData").insertBefore(errorMessage, document.querySelector(".submit-sign-in"))
+                }
                 setTimeout(() => createLoader(false), 2000)
 
             } else {
-                // document.querySelector(".sign-in-container").remove()
+                document.querySelector(".sign-in-container").remove()
                 console.log(response)
                 token = response
             }
