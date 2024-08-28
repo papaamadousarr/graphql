@@ -26,8 +26,8 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
         })
         .then(data => {
             console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
-            if (data) {
-                localStorage.setItem('jwt', data);
+            if (data.token) {
+                localStorage.setItem('jwt', data.token);
                 showProfile();
             } else {
                 throw new Error('No token received');
@@ -80,22 +80,9 @@ document.getElementById('logoutButton').addEventListener('click', function () {
     location.reload();
 });
 
-// Fonction pour dessiner le graphique XP
-function renderXpGraph() {
-    const svg = d3.select('#xpGraph');
+function renderXpHistogram() {
+    const svg = document.getElementById('xpGraph');
     const jwt = localStorage.getItem('jwt');
-    const width = +svg.attr('width');
-    const height = +svg.attr('height');
-    const margin = { top: 20, right: 150, bottom: 50, left: 60 }; // Added space for legend
-    const graphWidth = width - margin.left - margin.right;
-    const graphHeight = height - margin.top - margin.bottom;
-
-    // Nettoyer le SVG avant de dessiner le nouveau graphique
-    svg.selectAll('*').remove();
-
-    // Créer un groupe pour le graphique
-    const plot = svg.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
 
     fetch('https://learn.zone01dakar.sn/api/graphql-engine/v1/graphql', {
         method: 'POST',
@@ -119,104 +106,60 @@ function renderXpGraph() {
         if (data.data && data.data.transaction) {
             const transactions = data.data.transaction;
 
-            // Define XP ranges (bins)
-            const binSize = 1000; // Define the bin size for XP ranges
-            const xpRange = d3.bin().thresholds(d3.range(0, d3.max(transactions, d => d.amount) + binSize, binSize));
+            // Grouper les transactions par date (jour)
+            const groupedData = transactions.reduce((acc, transaction) => {
+                const date = new Date(transaction.createdAt).toISOString().split('T')[0]; // YYYY-MM-DD
+                if (!acc[date]) {
+                    acc[date] = 0;
+                }
+                acc[date] += transaction.amount;
+                return acc;
+            }, {});
 
-            // Process data into bins
-            const binnedData = xpRange(transactions.map(d => d.amount));
-
-            // Calculate counts for each bin
-            const dataArray = binnedData.map(bin => ({
-                x0: bin.x0,
-                x1: bin.x1,
-                count: bin.length
+            // Convertir les données groupées en tableau pour le tri
+            const sortedDates = Object.keys(groupedData).sort();
+            const dataPoints = sortedDates.map(date => ({
+                date,
+                amount: groupedData[date]
             }));
 
-            // Define the scales
-            const xScale = d3.scaleLinear()
-                .domain([0, d3.max(dataArray, d => d.x1)])
-                .range([0, graphWidth]);
+            // Dimensions du SVG
+            const width = 800;
+            const height = 400;
+            const barWidth = width / dataPoints.length;
+            const maxAmount = Math.max(...dataPoints.map(d => d.amount));
 
-            const yScale = d3.scaleLinear()
-                .domain([0, d3.max(dataArray, d => d.count)])
-                .nice()
-                .range([graphHeight, 0]);
+            // Clear existing content
+            while (svg.firstChild) {
+                svg.removeChild(svg.firstChild);
+            }
 
-            // Create bars
-            plot.selectAll('.bar')
-                .data(dataArray)
-                .enter().append('rect')
-                .attr('class', 'bar')
-                .attr('x', d => xScale(d.x0))
-                .attr('y', d => yScale(d.count))
-                .attr('width', d => xScale(d.x1) - xScale(d.x0))
-                .attr('height', d => graphHeight - yScale(d.count))
-                .attr('fill', '#69b3a2');
+            // Dessiner les barres
+            dataPoints.forEach((point, index) => {
+                const x = index * barWidth;
+                const y = height - (point.amount / maxAmount * height);
+                const heightBar = height - y;
 
-            // Create and add the X and Y axes
-            const xAxis = d3.axisBottom(xScale).tickSize(-graphHeight).ticks(10);
-            const yAxis = d3.axisLeft(yScale).ticks(10);
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', x);
+                rect.setAttribute('y', y);
+                rect.setAttribute('width', barWidth - 1); // Laisser un petit espace entre les barres
+                rect.setAttribute('height', heightBar);
+                rect.setAttribute('fill', 'blue');
 
-            plot.append('g')
-                .attr('class', 'x axis')
-                .attr('transform', `translate(0,${graphHeight})`)
-                .call(xAxis);
+                svg.appendChild(rect);
+            });
 
-            plot.append('g')
-                .attr('class', 'y axis')
-                .call(yAxis);
-
-            // Add labels for X axis
-            plot.append('text')
-                .attr('x', graphWidth / 2)
-                .attr('y', graphHeight + margin.bottom - 10)
-                .attr('text-anchor', 'middle')
-                .text('XP Range');
-
-            // Add labels for Y axis
-            plot.append('text')
-                .attr('x', -margin.left / 2)
-                .attr('y', -margin.top / 2)
-                .attr('text-anchor', 'middle')
-                .attr('transform', 'rotate(-90)')
-                .text('Number of Students');
-
-            // Create the legend if needed
-            const legendData = [
-                { color: '#69b3a2', label: 'Number of Students' }
-            ];
-
-            const legend = svg.append('g')
-                .attr('transform', `translate(${width - margin.right + 20}, ${margin.top})`);
-
-            legend.selectAll('.legend')
-                .data(legendData)
-                .enter().append('g')
-                .attr('class', 'legend')
-                .attr('transform', (d, i) => `translate(0,${i * 20})`);
-
-            legend.selectAll('.legend')
-                .append('rect')
-                .attr('x', 0)
-                .attr('width', 18)
-                .attr('height', 18)
-                .style('fill', d => d.color);
-
-            legend.selectAll('.legend')
-                .append('text')
-                .attr('x', 25)
-                .attr('y', 15)
-                .text(d => d.label);
-
+            // Optionnel : Ajouter des axes, labels, etc.
         } else {
-            throw new Error('Transaction data not found');
+            console.error('Transaction data not found');
         }
     })
     .catch(error => {
         console.error('XP Graph fetch error:', error);
     });
 }
+
 
 // Fonction pour dessiner le graphique des résultats des projets
 function renderProjectResultsGraph() {
