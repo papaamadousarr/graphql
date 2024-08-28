@@ -26,7 +26,7 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
         })
         .then(data => {
             console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
-            if (data.token) {
+            if (data) {
                 localStorage.setItem('jwt', data.token);
                 showProfile();
             } else {
