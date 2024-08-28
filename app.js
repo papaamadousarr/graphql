@@ -85,6 +85,11 @@ function renderXpGraph() {
     const svg = document.getElementById('xpGraph');
     const jwt = localStorage.getItem('jwt');
 
+    if (!jwt) {
+        console.error('No JWT found in localStorage.');
+        return;
+    }
+
     fetch('https://learn.zone01dakar.sn/api/graphql-engine/v1/graphql', {
         method: 'POST',
         headers: {
@@ -102,31 +107,47 @@ function renderXpGraph() {
             `
         })
     })
-        .then(response => response.json())
-        .then(data => {
-            console.log('XP Graph Data:', data); // Pour vérifier les données des transactions XP
-            if (data.data && data.data.transaction) {
-                const transactions = data.data.transaction;
-                const points = transactions.map(t => {
-                    const date = new Date(t.createdAt).getTime();
-                    return `${date},${t.amount}`;
-                }).join(" ");
+    .then(response => response.json())
+    .then(data => {
+        console.log('XP Graph Data:', data); // For debugging the data format
 
-                const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-                polyline.setAttribute('fill', 'none');
-                polyline.setAttribute('stroke', 'blue');
-                polyline.setAttribute('stroke-width', '2');
-                polyline.setAttribute('points', points);
-                svg.appendChild(polyline);
-            } else {
-                throw new Error('Transaction data not found');
+        if (data.data && data.data.transaction) {
+            const transactions = data.data.transaction;
+
+            // Check if transactions have data
+            if (transactions.length === 0) {
+                console.log('No transactions data available.');
+                return;
             }
-        })
-        .catch(error => {
-            console.error('XP Graph fetch error:', error);
-        });
 
+            // Prepare points for polyline
+            const points = transactions.map(t => {
+                const date = new Date(t.createdAt).getTime();
+                return `${date},${t.amount}`;
+            }).join(' ');
+
+            // Clear previous content
+            svg.innerHTML = '';
+
+            // Create and append polyline
+            const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            polyline.setAttribute('fill', 'none');
+            polyline.setAttribute('stroke', 'blue');
+            polyline.setAttribute('stroke-width', '2');
+            polyline.setAttribute('points', points);
+
+            svg.appendChild(polyline);
+
+            // Optional: Add axes, labels, or grid for better visualization
+        } else {
+            throw new Error('Transaction data not found');
+        }
+    })
+    .catch(error => {
+        console.error('XP Graph fetch error:', error);
+    });
 }
+
 
 // Fonction pour dessiner le graphique des résultats des projets
 function renderProjectResultsGraph() {
