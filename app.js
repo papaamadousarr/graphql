@@ -90,6 +90,16 @@ function renderXpGraph() {
     const graphWidth = width - margin.left - margin.right;
     const graphHeight = height - margin.top - margin.bottom;
 
+    // Fonction pour créer un élément SVG texte
+    function createText(x, y, textContent, anchor = 'middle') {
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y);
+        text.setAttribute('text-anchor', anchor);
+        text.textContent = textContent;
+        return text;
+    }
+
     // Nettoyer le SVG avant de dessiner le nouveau graphique
     while (svg.firstChild) {
         svg.removeChild(svg.firstChild);
@@ -119,10 +129,7 @@ function renderXpGraph() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('XP Graph Data:', data);
-
         if (data.data && data.data.transaction) {
-            // Transform the data to monthly totals
             const transactions = data.data.transaction;
             const monthlyTotals = transactions.reduce((acc, t) => {
                 const date = new Date(t.createdAt);
@@ -133,70 +140,66 @@ function renderXpGraph() {
 
             const dataArray = Object.entries(monthlyTotals).map(([label, value]) => ({ label, value }));
 
-            // Define scales
-            const xScale = d3.scaleBand()
-                .domain(dataArray.map(d => d.label))
-                .range([0, graphWidth])
-                .padding(0.1);
+            // Définir les échelles
+            const xScale = dataArray.map((d, i) => i * (graphWidth / dataArray.length));
+            const yMax = d3.max(dataArray, d => d.value); // Trouver la valeur maximale pour l'échelle Y
 
-            const yScale = d3.scaleLinear()
-                .domain([0, d3.max(dataArray, d => d.value)])
-                .nice()
-                .range([graphHeight, 0]);
-
-            // Create bars
-            dataArray.forEach(d => {
-                const x = xScale(d.label);
-                const barWidth = xScale.bandwidth();
-                const barHeight = graphHeight - yScale(d.value);
+            // Créer les barres
+            dataArray.forEach((d, i) => {
+                const x = xScale[i];
+                const barWidth = graphWidth / dataArray.length - 10;
+                const barHeight = graphHeight - (d.value / yMax) * graphHeight;
                 const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 rect.setAttribute('class', 'bar');
                 rect.setAttribute('x', x);
-                rect.setAttribute('y', yScale(d.value));
+                rect.setAttribute('y', barHeight);
                 rect.setAttribute('width', barWidth);
-                rect.setAttribute('height', barHeight);
+                rect.setAttribute('height', graphHeight - barHeight);
                 plot.appendChild(rect);
             });
 
-            // Create X Axis
-            const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            xAxis.setAttribute('class', 'axis');
-            xAxis.setAttribute('transform', `translate(0,${graphHeight})`);
-            svg.appendChild(xAxis);
+            // Créer et ajouter les axes X et Y
+            const xAxisGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            xAxisGroup.setAttribute('class', 'axis');
+            xAxisGroup.setAttribute('transform', `translate(0,${graphHeight})`);
+            svg.appendChild(xAxisGroup);
 
-            // Create Y Axis
-            const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            yAxis.setAttribute('class', 'axis');
-            svg.appendChild(yAxis);
+            const yAxisGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            yAxisGroup.setAttribute('class', 'axis');
+            svg.appendChild(yAxisGroup);
 
-            // Adding X axis labels
-            dataArray.forEach(d => {
-                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', xScale(d.label) + xScale.bandwidth() / 2);
-                text.setAttribute('y', graphHeight + margin.bottom / 2);
-                text.setAttribute('text-anchor', 'middle');
-                text.textContent = d.label;
+            // Ajouter les labels de l'axe X
+            dataArray.forEach((d, i) => {
+                const x = xScale[i] + (graphWidth / dataArray.length) / 2;
+                const text = createText(x, graphHeight + margin.bottom / 2, d.label);
                 svg.appendChild(text);
             });
 
-            // Adding Y axis labels
-            const yAxisLabels = [0, d3.max(dataArray, d => d.value)];
+            // Ajouter les labels de l'axe Y
+            const yAxisLabels = [0, yMax];
             yAxisLabels.forEach(label => {
-                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', -margin.left / 2);
-                text.setAttribute('y', yScale(label) + margin.top);
-                text.setAttribute('text-anchor', 'middle');
-                text.textContent = label;
-                text.setAttribute('class', 'axis');
+                const y = graphHeight - (label / yMax) * graphHeight;
+                const text = createText(-margin.left / 2, y, label, 'end');
                 svg.appendChild(text);
             });
 
-            // Draw X and Y axis using D3.js scales (or you can manually implement them)
-            d3.select(xAxis)
-                .call(d3.axisBottom(xScale));
+            // Dessiner les axes X et Y
+            const xAxisLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            xAxisLine.setAttribute('x1', 0);
+            xAxisLine.setAttribute('y1', graphHeight);
+            xAxisLine.setAttribute('x2', graphWidth);
+            xAxisLine.setAttribute('y2', graphHeight);
+            xAxisLine.setAttribute('stroke', '#000');
+            svg.appendChild(xAxisLine);
 
-            d3.select(yAxis)
-                .call(d3.axisLeft(yScale));
+            const yAxisLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            yAxisLine.setAttribute('x1', 0);
+            yAxisLine.setAttribute('y1', 0);
+            yAxisLine.setAttribute('x2', 0);
+            yAxisLine.setAttribute('y2', graphHeight);
+            yAxisLine.setAttribute('stroke', '#000');
+            svg.appendChild(yAxisLine);
+
         } else {
             throw new Error('Transaction data not found');
         }
@@ -205,7 +208,6 @@ function renderXpGraph() {
         console.error('XP Graph fetch error:', error);
     });
 }
-
 
 // Fonction pour dessiner le graphique des résultats des projets
 function renderProjectResultsGraph() {
