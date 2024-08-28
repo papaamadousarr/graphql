@@ -1,4 +1,3 @@
-import { ID, Username } from "../app.js"
 const nsURI = "http://www.w3.org/2000/svg"
 
 export function createHomepage(totalLevel, totalSkill, totalXp, totalGrade) {
