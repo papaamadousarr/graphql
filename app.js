@@ -1,12 +1,6 @@
 import { createHomepage } from "./ui/homepage-layout.js"
 import { createLoader } from "./ui/loader.js"
 
-// Vérifier si l'utilisateur est déjà connecté
-const jwt = localStorage.getItem('jwt');
-if (jwt) {
-    showProfile();
-}
-
 // Gérer le formulaire de connexion
 document.getElementById('loginForm').addEventListener('submit', function (event) {
     event.preventDefault();
@@ -98,6 +92,13 @@ let totalSkill = {}
 let totalXp = {}
 let totalGrade = {}
 let totalLevel = {}
+
+// Vérifier si l'utilisateur est déjà connecté
+const jwt = localStorage.getItem('jwt');
+if (jwt) {
+    showProfile();
+}
+
 export function getUserData(URL) {
     return fetch(URL, {
         method: "POST",
