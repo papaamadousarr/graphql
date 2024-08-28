@@ -80,8 +80,9 @@ document.getElementById('logoutButton').addEventListener('click', function () {
     location.reload();
 });
 
-function renderXpHistogram() {
+function renderXpGraph() {
     const svg = document.getElementById('xpGraph');
+    const tooltip = document.getElementById('tooltip');
     const jwt = localStorage.getItem('jwt');
 
     fetch('https://learn.zone01dakar.sn/api/graphql-engine/v1/graphql', {
@@ -106,7 +107,7 @@ function renderXpHistogram() {
         if (data.data && data.data.transaction) {
             const transactions = data.data.transaction;
 
-            // Grouper les transactions par date (jour)
+            // Grouper les transactions par date
             const groupedData = transactions.reduce((acc, transaction) => {
                 const date = new Date(transaction.createdAt).toISOString().split('T')[0]; // YYYY-MM-DD
                 if (!acc[date]) {
@@ -116,7 +117,6 @@ function renderXpHistogram() {
                 return acc;
             }, {});
 
-            // Convertir les données groupées en tableau pour le tri
             const sortedDates = Object.keys(groupedData).sort();
             const dataPoints = sortedDates.map(date => ({
                 date,
@@ -126,7 +126,8 @@ function renderXpHistogram() {
             // Dimensions du SVG
             const width = 800;
             const height = 400;
-            const barWidth = width / dataPoints.length;
+            const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+            const barWidth = (width - margin.left - margin.right) / dataPoints.length;
             const maxAmount = Math.max(...dataPoints.map(d => d.amount));
 
             // Clear existing content
@@ -136,9 +137,9 @@ function renderXpHistogram() {
 
             // Dessiner les barres
             dataPoints.forEach((point, index) => {
-                const x = index * barWidth;
-                const y = height - (point.amount / maxAmount * height);
-                const heightBar = height - y;
+                const x = margin.left + index * barWidth;
+                const y = height - margin.bottom - (point.amount / maxAmount * (height - margin.top - margin.bottom));
+                const heightBar = height - margin.bottom - y;
 
                 const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 rect.setAttribute('x', x);
@@ -146,11 +147,25 @@ function renderXpHistogram() {
                 rect.setAttribute('width', barWidth - 1); // Laisser un petit espace entre les barres
                 rect.setAttribute('height', heightBar);
                 rect.setAttribute('fill', 'blue');
+                rect.setAttribute('data-date', point.date);
+                rect.setAttribute('data-amount', point.amount);
+                
+                rect.addEventListener('mouseover', (e) => {
+                    tooltip.textContent = `Date: ${e.target.getAttribute('data-date')} - Amount: ${e.target.getAttribute('data-amount')}`;
+                    tooltip.style.left = `${e.pageX + 10}px`;
+                    tooltip.style.top = `${e.pageY + 10}px`;
+                    tooltip.style.display = 'block';
+                });
+                
+                rect.addEventListener('mouseout', () => {
+                    tooltip.style.display = 'none';
+                });
 
                 svg.appendChild(rect);
             });
 
-            // Optionnel : Ajouter des axes, labels, etc.
+            // Dessiner les axes
+            drawAxis(svg, width, height, margin, maxAmount);
         } else {
             console.error('Transaction data not found');
         }
@@ -160,6 +175,41 @@ function renderXpHistogram() {
     });
 }
 
+function drawAxis(svg, width, height, margin, maxAmount) {
+    // Dessiner l'axe X
+    const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    xAxis.setAttribute('x1', margin.left);
+    xAxis.setAttribute('y1', height - margin.bottom);
+    xAxis.setAttribute('x2', width - margin.right);
+    xAxis.setAttribute('y2', height - margin.bottom);
+    xAxis.setAttribute('stroke', 'black');
+    svg.appendChild(xAxis);
+
+    // Dessiner l'axe Y
+    const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    yAxis.setAttribute('x1', margin.left);
+    yAxis.setAttribute('y1', margin.top);
+    yAxis.setAttribute('x2', margin.left);
+    yAxis.setAttribute('y2', height - margin.bottom);
+    yAxis.setAttribute('stroke', 'black');
+    svg.appendChild(yAxis);
+
+    // Ajouter des labels aux axes
+    const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    yLabel.setAttribute('x', margin.left - 30);
+    yLabel.setAttribute('y', margin.top);
+    yLabel.setAttribute('transform', 'rotate(-90, ' + (margin.left - 30) + ',' + margin.top + ')');
+    yLabel.setAttribute('text-anchor', 'middle');
+    yLabel.textContent = 'XP Amount';
+    svg.appendChild(yLabel);
+
+    const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    xLabel.setAttribute('x', width / 2);
+    xLabel.setAttribute('y', height - 5);
+    xLabel.setAttribute('text-anchor', 'middle');
+    xLabel.textContent = 'Date';
+    svg.appendChild(xLabel);
+}
 
 // Fonction pour dessiner le graphique des résultats des projets
 function renderProjectResultsGraph() {
