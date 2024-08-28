@@ -86,18 +86,9 @@ function renderXpGraph() {
     const jwt = localStorage.getItem('jwt');
     const width = +svg.attr('width');
     const height = +svg.attr('height');
-    const margin = { top: 20, right: 20, bottom: 50, left: 60 };
+    const margin = { top: 20, right: 150, bottom: 50, left: 60 }; // Added space for legend
     const graphWidth = width - margin.left - margin.right;
     const graphHeight = height - margin.top - margin.bottom;
-
-    // Fonction pour créer un élément SVG texte
-    function createText(x, y, textContent, anchor = 'middle') {
-        return d3.create('svg:text')
-            .attr('x', x)
-            .attr('y', y)
-            .attr('text-anchor', anchor)
-            .text(textContent);
-    }
 
     // Nettoyer le SVG avant de dessiner le nouveau graphique
     svg.selectAll('*').remove();
@@ -155,7 +146,8 @@ function renderXpGraph() {
                 .attr('x', d => xScale(d.label))
                 .attr('y', d => yScale(d.value))
                 .attr('width', xScale.bandwidth())
-                .attr('height', d => graphHeight - yScale(d.value));
+                .attr('height', d => graphHeight - yScale(d.value))
+                .attr('fill', '#69b3a2');
 
             // Créer et ajouter les axes X et Y
             const xAxis = d3.axisBottom(xScale);
@@ -170,6 +162,33 @@ function renderXpGraph() {
                 .attr('class', 'y axis')
                 .call(yAxis);
 
+            // Créer la légende
+            const legendData = [
+                { color: '#69b3a2', label: 'XP Amount' }
+            ];
+
+            const legend = svg.append('g')
+                .attr('transform', `translate(${width - margin.right + 20}, ${margin.top})`);
+
+            legend.selectAll('.legend')
+                .data(legendData)
+                .enter().append('g')
+                .attr('class', 'legend')
+                .attr('transform', (d, i) => `translate(0,${i * 20})`);
+
+            legend.selectAll('.legend')
+                .append('rect')
+                .attr('x', 0)
+                .attr('width', 18)
+                .attr('height', 18)
+                .style('fill', d => d.color);
+
+            legend.selectAll('.legend')
+                .append('text')
+                .attr('x', 25)
+                .attr('y', 15)
+                .text(d => d.label);
+
         } else {
             throw new Error('Transaction data not found');
         }
@@ -178,7 +197,6 @@ function renderXpGraph() {
         console.error('XP Graph fetch error:', error);
     });
 }
-
 
 
 // Fonction pour dessiner le graphique des résultats des projets
