@@ -84,10 +84,15 @@ document.getElementById('logoutButton').addEventListener('click', function () {
 function renderXpGraph() {
     const svg = document.getElementById('xpGraph');
     const jwt = localStorage.getItem('jwt');
-    const radius = 16;
-    const centerX = 16;
-    const centerY = 16;
-    const total = 2 * Math.PI * radius;
+    const width = svg.clientWidth;
+    const height = svg.clientHeight;
+    const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+    const graphWidth = width - margin.left - margin.right;
+    const graphHeight = height - margin.top - margin.bottom;
+
+    // Fonction pour convertir les données en format pour les barres
+    const xScale = d3.scaleBand().range([0, graphWidth]).padding(0.1);
+    const yScale = d3.scaleLinear().range([graphHeight, 0]);
 
     fetch('https://learn.zone01dakar.sn/api/graphql-engine/v1/graphql', {
         method: 'POST',
@@ -106,77 +111,78 @@ function renderXpGraph() {
             `
         })
     })
-        .then(response => response.json())
-        .then(data => {
-            console.log('XP Graph Data:', data);
-            if (data.data && data.data.transaction) {
-                const transactions = data.data.transaction;
-                const monthlyTotals = transactions.reduce((acc, t) => {
-                    const date = new Date(t.createdAt);
-                    const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
-                    acc[monthYear] = (acc[monthYear] || 0) + t.amount;
-                    return acc;
-                }, {});
+    .then(response => response.json())
+    .then(data => {
+        console.log('XP Graph Data:', data);
 
-                const totalAmount = Object.values(monthlyTotals).reduce((a, b) => a + b, 0);
-                let accumulatedAngle = 0;
+        if (data.data && data.data.transaction) {
+            const transactions = data.data.transaction;
+            const monthlyTotals = transactions.reduce((acc, t) => {
+                const date = new Date(t.createdAt);
+                const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
+                acc[monthYear] = (acc[monthYear] || 0) + t.amount;
+                return acc;
+            }, {});
 
-                Object.entries(monthlyTotals).forEach(([label, amount], index) => {
-                    const percentage = amount / totalAmount;
-                    const angle = percentage * 360;
-                    const startAngle = accumulatedAngle;
-                    const endAngle = accumulatedAngle + angle;
-                    accumulatedAngle = endAngle;
+            const dataArray = Object.entries(monthlyTotals).map(([label, value]) => ({ label, value }));
 
-                    const start = polarToCartesian(centerX, centerY, radius, endAngle - angle);
-                    const end = polarToCartesian(centerX, centerY, radius, endAngle);
-                    const largeArcFlag = angle > 180 ? 1 : 0;
+            // Définir les échelles
+            xScale.domain(dataArray.map(d => d.label));
+            yScale.domain([0, d3.max(dataArray, d => d.value)]);
 
-                    const d = [
-                        `M ${centerX} ${centerY}`,
-                        `L ${start.x} ${start.y}`,
-                        `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`,
-                        'Z'
-                    ].join(' ');
-
-                    const slice = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                    slice.setAttribute('d', d);
-                    slice.setAttribute('fill', getColor(index));
-                    slice.setAttribute('class', 'slice');
-                    slice.setAttribute('data-label', label);
-                    slice.setAttribute('data-value', amount);
-                    svg.appendChild(slice);
-                });
-
-                svg.addEventListener('mousemove', (event) => {
-                    const target = event.target;
-                    if (target.classList.contains('slice')) {
-                        const label = target.getAttribute('data-label');
-                        const value = target.getAttribute('data-value');
-                        console.log(`Label: ${label}, Value: ${value}`);
-                    }
-                });
-            } else {
-                throw new Error('Transaction data not found');
+            // Nettoyer l'ancien graphique
+            while (svg.firstChild) {
+                svg.removeChild(svg.firstChild);
             }
-        })
-        .catch(error => {
-            console.error('XP Graph fetch error:', error);
-        });
 
-    function polarToCartesian(centerX, centerY, radius, angle) {
-        const radians = (angle - 90) * Math.PI / 180.0;
-        return {
-            x: centerX + (radius * Math.cos(radians)),
-            y: centerY + (radius * Math.sin(radians))
-        };
-    }
+            // Créer le groupe pour les barres
+            const plot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            plot.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+            svg.appendChild(plot);
 
-    function getColor(index) {
-        const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039'];
-        return colors[index % colors.length];
-    }
+            // Dessiner les barres
+            dataArray.forEach(d => {
+                const x = xScale(d.label);
+                const barWidth = xScale.bandwidth();
+                const barHeight = graphHeight - yScale(d.value);
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('class', 'bar');
+                rect.setAttribute('x', x);
+                rect.setAttribute('y', yScale(d.value));
+                rect.setAttribute('width', barWidth);
+                rect.setAttribute('height', barHeight);
+                plot.appendChild(rect);
+            });
+
+            // Ajouter les labels des axes
+            const xAxisGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            xAxisGroup.setAttribute('class', 'axis');
+            xAxisGroup.setAttribute('transform', `translate(${margin.left},${height - margin.bottom})`);
+            svg.appendChild(xAxisGroup);
+
+            const yAxisGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            yAxisGroup.setAttribute('class', 'axis');
+            yAxisGroup.setAttribute('transform', `translate(${margin.left},${margin.top})`);
+            svg.appendChild(yAxisGroup);
+
+            // Dessiner les axes avec D3.js (ou ajuster selon votre méthode)
+            d3.select(xAxisGroup)
+                .call(d3.axisBottom(xScale));
+
+            d3.select(yAxisGroup)
+                .call(d3.axisLeft(yScale));
+
+        } else {
+            throw new Error('Transaction data not found');
+        }
+    })
+    .catch(error => {
+        console.error('XP Graph fetch error:', error);
+    });
 }
+
+// Charge le graphique après le chargement du document
+document.addEventListener('DOMContentLoaded', renderXpGraph);
 
 
 // Fonction pour dessiner le graphique des résultats des projets
