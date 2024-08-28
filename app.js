@@ -117,13 +117,26 @@ function renderXpGraph() {
             // Check if transactions have data
             if (transactions.length === 0) {
                 console.log('No transactions data available.');
+                svg.innerHTML = '<text x="10" y="20">No data available</text>'; // Optional: display a message
                 return;
             }
+
+            // Determine the SVG dimensions
+            const width = svg.clientWidth;
+            const height = svg.clientHeight;
+
+            // Get min and max values for scaling
+            const minAmount = Math.min(...transactions.map(t => t.amount));
+            const maxAmount = Math.max(...transactions.map(t => t.amount));
+            const minDate = Math.min(...transactions.map(t => new Date(t.createdAt).getTime()));
+            const maxDate = Math.max(...transactions.map(t => new Date(t.createdAt).getTime()));
 
             // Prepare points for polyline
             const points = transactions.map(t => {
                 const date = new Date(t.createdAt).getTime();
-                return `${date},${t.amount}`;
+                const scaledX = ((date - minDate) / (maxDate - minDate)) * width;
+                const scaledY = height - ((t.amount - minAmount) / (maxAmount - minAmount)) * height;
+                return `${scaledX},${scaledY}`;
             }).join(' ');
 
             // Clear previous content
@@ -139,6 +152,22 @@ function renderXpGraph() {
             svg.appendChild(polyline);
 
             // Optional: Add axes, labels, or grid for better visualization
+            // Example: Add X and Y axes (you might need to adjust according to your needs)
+            const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            xAxis.setAttribute('x1', '0');
+            xAxis.setAttribute('y1', height);
+            xAxis.setAttribute('x2', width);
+            xAxis.setAttribute('y2', height);
+            xAxis.setAttribute('stroke', 'black');
+            svg.appendChild(xAxis);
+
+            const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            yAxis.setAttribute('x1', '0');
+            yAxis.setAttribute('y1', '0');
+            yAxis.setAttribute('x2', '0');
+            yAxis.setAttribute('y2', height);
+            yAxis.setAttribute('stroke', 'black');
+            svg.appendChild(yAxis);
         } else {
             throw new Error('Transaction data not found');
         }
