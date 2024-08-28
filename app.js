@@ -8,9 +8,9 @@ if (jwt) {
 document.getElementById('loginForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
-    // const username = document.getElementById('username').value;
-    // const password = document.getElementById('password').value;
-    // const credentials = btoa(`${username}:${password}`);
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const credentials = btoa(`${username}:${password}`);
 
     function loginUser(credentials) {
         fetch('https://learn.zone01dakar.sn/api/auth/signin', {
@@ -55,7 +55,7 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
     }
     
     // Example usage
-    const credentials = btoa('username:password'); // Replace with actual Base64 encoded credentials
+    // const credentials = btoa('username:password'); // Replace with actual Base64 encoded credentials
     loginUser(credentials);
 
 });
