@@ -82,7 +82,7 @@ document.getElementById('logoutButton').addEventListener('click', function () {
 
 // Fonction pour dessiner le graphique XP
 function renderXpGraph() {
-    const svg = document.getElementById('xpPieChart');
+    const svg = document.getElementById('xpGraph');
     const jwt = localStorage.getItem('jwt');
 
     if (!jwt) {
