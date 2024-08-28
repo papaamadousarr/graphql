@@ -88,7 +88,12 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
             console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
             if (data) {
                 localStorage.setItem('jwt', data);
-                otherUsersGQL(credentials)
+                evt.preventDefault()
+                const data = new FormData(evt.target);
+                const dataObj = Object.fromEntries(data)
+                credentials = `${dataObj.username}:${dataObj.password}`;
+                const encodedCredentials = btoa(credentials);
+                otherUsersGQL(encodedCredentials)
             } else {
                 throw new Error('No token received');
             }
