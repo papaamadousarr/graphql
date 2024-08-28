@@ -98,7 +98,7 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
                                     getTotalXpAndGrades(projectTransactions(response, progressArr))
                                 })
                             }).then(() => {
-                                createHomepage(totalLevel, totalSkill, totalXp, totalGrade)
+                                // createHomepage(totalLevel, totalSkill, totalXp, totalGrade)
                                 setTimeout(() => createLoader(false), 5000)
                             })
                     })
