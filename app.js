@@ -12,51 +12,31 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
     const password = document.getElementById('password').value;
     const credentials = btoa(`${username}:${password}`);
 
-    function loginUser(credentials) {
-        fetch('https://learn.zone01dakar.sn/api/auth/signin', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${credentials}`,
-                'Content-Type': 'application/json'
-            }
-        })
+    fetch('https://learn.zone01dakar.sn/api/auth/signin', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${credentials}`
+        }
+    })
         .then(response => {
-            // Log the status and headers for debugging
-            console.log('Response Status:', response.status);
-            console.log('Response Headers:', [...response.headers.entries()]);
-    
             if (!response.ok) {
-                // Handle HTTP errors
-                return response.json().then(errorData => {
-                    throw new Error(`HTTP Error ${response.status}: ${errorData.message || 'Unknown error'}`);
-                });
+                throw new Error('Invalid credentials');
             }
             return response.json();
         })
         .then(data => {
-            console.log('Authentication Response:', data); // Log the full response
-    
-            // Check for token in the response
+            console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
             if (data.token) {
                 localStorage.setItem('jwt', data.token);
-                showProfile(); // Function to display user profile
+                showProfile();
             } else {
                 throw new Error('No token received');
             }
         })
         .catch(error => {
             console.error('Login error:', error);
-            const errorMessageElement = document.getElementById('errorMessage');
-            if (errorMessageElement) {
-                errorMessageElement.style.display = 'block';
-                errorMessageElement.textContent = error.message; // Display the error message
-            }
+            document.getElementById('errorMessage').style.display = 'block';
         });
-    }
-    
-    // Example usage
-    // const credentials = btoa('username:password'); // Replace with actual Base64 encoded credentials
-    loginUser(credentials);
 
 });
 
