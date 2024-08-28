@@ -1,44 +1,3 @@
-// Vérifier si l'utilisateur est déjà connecté
-const jwt = localStorage.getItem('jwt');
-if (jwt) {
-    createHomepage(totalLevel, totalSkill, totalXp, totalGrade);
-}
-
-// Gérer le formulaire de connexion
-document.getElementById('loginForm').addEventListener('submit', function (event) {
-    event.preventDefault();
-
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const credentials = btoa(`${username}:${password}`);
-
-    fetch('https://learn.zone01dakar.sn/api/auth/signin', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Basic ${credentials}`
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Invalid credentials');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
-            if (data.token) {
-                localStorage.setItem('jwt', data.token);
-                createHomepage(totalLevel, totalSkill, totalXp, totalGrade);
-            } else {
-                throw new Error('No token received');
-            }
-        })
-        .catch(error => {
-            console.error('Login error:', error);
-            document.getElementById('errorMessage').style.display = 'block';
-        });
-
-});
 import { createLoader } from "./ui/loader.js"
 
 const Url = "https://learn.01founders.co/api/graphql-engine/v1/graphql"
@@ -939,3 +898,44 @@ function monthDiff(d1, d2) {
     months += new Date(d2).getMonth();
     return months <= 0 ? 0 : months;
 }
+// Vérifier si l'utilisateur est déjà connecté
+const jwt = localStorage.getItem('jwt');
+if (jwt) {
+    createHomepage(totalLevel, totalSkill, totalXp, totalGrade);
+}
+
+// Gérer le formulaire de connexion
+document.getElementById('loginForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const credentials = btoa(`${username}:${password}`);
+
+    fetch('https://learn.zone01dakar.sn/api/auth/signin', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${credentials}`
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Invalid credentials');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Authentication Response:', data); // Pour vérifier la structure de la réponse
+            if (data.token) {
+                localStorage.setItem('jwt', data.token);
+                createHomepage(totalLevel, totalSkill, totalXp, totalGrade);
+            } else {
+                throw new Error('No token received');
+            }
+        })
+        .catch(error => {
+            console.error('Login error:', error);
+            document.getElementById('errorMessage').style.display = 'block';
+        });
+
+});
