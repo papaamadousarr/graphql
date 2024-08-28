@@ -54,7 +54,7 @@ let resultArr = []
 let totalSkillArr = []
 
 let totalSkill = {}
-let totalXp = {}
+var totalXp = {}
 let totalGrade = {}
 let totalLevel = {}
 
