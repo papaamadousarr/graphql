@@ -102,6 +102,7 @@
   flex-direction: column;
   background-color: #5a2722;
   padding: 5px 10px;
+  margin-right: 10%;
 }
 #audit .title {
   display: flex;
