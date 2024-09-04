@@ -90,7 +90,7 @@ async function query(q) {
 }
 
 async function setlevel() {
-    const q = `{user {events (where:{ event: {path: { _ilike: "/madere/div-01"}}}) {
+    const q = `{user {events (where:{ event: {path: { _ilike: "/dakar/div-01/graphql"}}}) {
         level 
     }}}`
     const level = await query(q).then(j => j.data.user[0].events[0].level)
@@ -100,7 +100,7 @@ async function setlevel() {
 
 async function getTotalXP() {
     const x = `{transaction_aggregate 
-        (where: { type: { _eq: "xp"}, event: {path: { _ilike: "/madere/div-01"}}}) {
+        (where: { type: { _eq: "xp"}, event: {path: { _ilike: "/dakar/div-01/graphql"}}}) {
             aggregate {sum {
                 amount
             }}}
@@ -206,7 +206,7 @@ async function setPositionGraph() {
     const tx = `{ transaction (where: {
         type: {_eq: "xp"} 
         event: { 
-            path: { _ilike: "/madere/div-01"}} 
+            path: { _ilike: "/dakar/div-01/graphql"}} 
         } 
         order_by: { createdAt: asc}) {
             createdAt
