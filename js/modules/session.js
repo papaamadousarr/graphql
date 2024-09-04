@@ -93,6 +93,7 @@ async function setlevel() {
     const q = `{user {events (where:{ event: {path: { _ilike: "/dakar/div-01/graphql"}}}) {
         level 
     }}}`
+    console.log(data);
     const level = await query(q).then(j => j.data.user[0].events[0].level)
 
     document.querySelector('#level p:last-child').innerText = level
