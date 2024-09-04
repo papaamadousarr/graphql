@@ -93,7 +93,12 @@ async function setlevel() {
     const q = `{user {events (where:{ event: {path: { _ilike: "/dakar/div-01"}}}) {
         level 
     }}}`
+
+    const result = await query(q);
+    console.log(result);
+
     const level = await query(q).then(j => j.data.user[0].events[0].level)
+
 
     document.querySelector('#level p:last-child').innerText = level
 }
@@ -127,7 +132,7 @@ async function setNewAudit() {
 
     if (audit.length >= 1) {
         const path = audit[0].group.path.split('/')
-        
+
         document.querySelector('#newAudit div:first-child h6').innerText = path[path.length - 1]
         document.querySelector('#newAudit div:first-child p').innerText = `@${audit[0].group.captainLogin}`
         document.querySelector('#newAudit div:last-child h1').innerText = audit[0].private.code.toUpperCase()
@@ -257,7 +262,7 @@ async function setPositionGraph() {
     }, "")
 
     document.querySelector('#currentPositionGraph svg polyline').setAttribute('points', points)
-    document.getElementById('axisX').setAttribute('x',graphWidth/2)
+    document.getElementById('axisX').setAttribute('x', graphWidth / 2)
 }
 
 export function logout() {
