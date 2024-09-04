@@ -1,0 +1,23 @@
+$position_bg_color: #3e171b;
+
+#currentPositionGraph {
+    height: 250px;
+    display: flex;
+    // flex-grow: 1;
+
+    margin: 0 8vw 0 8vw;
+
+    background-color: $position_bg_color;
+
+    svg {
+        flex-grow: 1;
+        // width: 100%;
+        // height: 100%; 
+
+        padding: 10px;
+
+        text {
+            fill: #ff764c;
+        }
+    }
+}
